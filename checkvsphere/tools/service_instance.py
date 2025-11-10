@@ -78,6 +78,7 @@ def connect(args):
                 except Exception as e:
                     logging.debug("session is bad")
                     logging.debug(e)
+                    raise
         except Exception as e:
             if sessionId:
                 logging.debug("retry without sessionId")
