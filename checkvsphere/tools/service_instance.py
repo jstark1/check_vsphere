@@ -71,8 +71,13 @@ def connect(args):
         try:
             service_instance = SmartConnect(**params)
             if sessionId:
-                logging.debug("checking sessionid...")
-                SessionIsActive(sessionId,args.user)
+                logging.debug("checking session: " + sessionId + " for user " + args.user)
+                try:
+                    service_instance.content.sessionManager.SessionIsActive(sessionId,args.user)
+                    logging.debug("session is good")
+                except Exception as e:
+                    logging.debug("session is bad")
+                    logging.debug(e)
         except Exception as e:
             if sessionId:
                 logging.debug("retry without sessionId")
