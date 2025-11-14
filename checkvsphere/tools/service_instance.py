@@ -71,14 +71,19 @@ def connect(args):
         try:
             service_instance = SmartConnect(**params)
             if sessionId:
-                logging.debug("checking session: " + sessionId + " for user " + args.user)
-                try:
-                    service_instance.content.sessionManager.SessionIsActive(sessionId,args.user)
-                    logging.debug("session is good")
-                except Exception as e:
-                    logging.debug("session is bad")
-                    logging.debug(e)
-                    raise
+                sessionfile_mod_time = os.path.getmtime(sessionfile)
+                time_diff = time.time() - sessionfile_mod_time
+                if time_diff >= (1 * 60):
+                    logging.debug("checking session: " + sessionId + " for user " + args.user)
+                    try:
+                        service_instance.content.sessionManager.SessionIsActive(sessionId,args.user)
+                        logging.debug("session is good")
+                    except Exception as e:
+                        logging.debug("session is bad")
+                        logging.debug(e)
+                        raise
+                else:
+                    logging.debug("session looks fresh")
         except Exception as e:
             if sessionId:
                 logging.debug("retry without sessionId")
@@ -93,7 +98,12 @@ def connect(args):
             raise e
 
     if sessionfile:
-        write_session_id(service_instance, args.sessionfile)
+        sessionfile_mod_time = os.path.getmtime(sessionfile)
+        time_diff = time.time() - sessionfile_mod_time
+        if time_diff >= (1 * 60):
+            write_session_id(service_instance, args.sessionfile)
+        else:
+            logging.debug("not updateing sessionfile within timerange")
     else:
         logging.debug('add disconnect handler')
         # doing this means you don't need to remember to disconnect your script/objects
